@@ -136,21 +136,9 @@ def segment(content: bytes) -> np.ndarray:
 
     with torch.inference_mode():
 
-        logits = model(
-            pixel_values=tensor
-        ).logits
-
-        # [1, 7, h, w] -> [1, h, w]
-        mask = logits.argmax(
-            dim=1
-        ).float()
-
-        # Resize single-channel mask
-        mask = F.interpolate(
-            mask.unsqueeze(1),
-            size=tensor.shape[-2:],
-            mode="nearest",
-        )
+        logits = model(pixel_values=tensor).logits                     # (1, C, H/4, W/4)
+        logits = F.interpolate(logits, size=tensor.shape[-2:], mode="bilinear", align_corners=False)
+        mask = logits.argmax(dim=1)[0]
 
     return (
         mask[0]
