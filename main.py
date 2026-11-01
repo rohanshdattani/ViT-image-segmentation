@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image, UnidentifiedImageError
 from transformers import SegformerForSemanticSegmentation
 
-MODEL_PATH = "./model"
+MODEL_ID = "ChillinSpyder/ViT-image-segmentation-model"
 LONG_SIDE = 1024            # the model was trained on images with a long side of 1024
 MAX_UPLOAD_MB = 15
 ALLOWED_TYPES = {"image/jpeg", "image/png"}
@@ -29,7 +29,7 @@ STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if os.environ.get("TORCH_THREADS"):          # in a container, torch may see the host's cores; pin it to your vCPUs
     torch.set_num_threads(int(os.environ["TORCH_THREADS"]))
-model = SegformerForSemanticSegmentation.from_pretrained(MODEL_PATH).to(device).eval()
+model = SegformerForSemanticSegmentation.from_pretrained(MODEL_ID).to(device).eval()
 inference_lock = threading.Lock()            # one forward pass at a time (CPU demos get slower if they overlap)
 print("Using device:", device)
 
