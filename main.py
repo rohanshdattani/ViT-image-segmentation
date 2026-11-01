@@ -13,7 +13,7 @@ from PIL import Image, UnidentifiedImageError
 from transformers import SegformerForSemanticSegmentation
 
 MODEL_ID = "ChillinSpyder/ViT-image-segmentation-model"
-LONG_SIDE = 1024            # the model was trained on images with a long side of 1024
+LONG_SIDE = 512            # the model was trained on images with a long side of 1024
 MAX_UPLOAD_MB = 15
 ALLOWED_TYPES = {"image/jpeg", "image/png"}
 
