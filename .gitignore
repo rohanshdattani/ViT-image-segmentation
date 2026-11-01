@@ -1,0 +1,5 @@
+fastenv/
+__pycache__/
+*.pyc
+.env
+model/

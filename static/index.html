@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drone image segmentation</title>
+<style>
+  body { font: 16px system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+  figure { flex: 1 1 380px; margin: 0; }
+  img { width: 100%; min-height: 120px; background: #f3f3f3; border: 1px solid #ccc; }
+  .sw { display: inline-block; width: 12px; height: 12px; margin: 0 4px 0 14px; }
+</style>
+</head>
+<body>
+<h1>Drone image segmentation</h1>
+<input type="file" id="file" accept="image/*">
+<button id="go">Segment</button> <span id="status"></span>
+<div class="row">
+  <figure><figcaption>Input</figcaption><img id="inp" alt=""></figure>
+  <figure><figcaption>Result</figcaption><img id="out" alt=""></figure>
+</div>
+<p id="legend"></p>
+
+<script>
+const API_URL = "/predict";   // your endpoint; use the full URL if the page is hosted elsewhere
+const FIELD = "file";         // multipart field name your endpoint expects
+const CLASSES = [["other", "#505050"], ["wall", "#e6a03c"], ["road", "#bebec8"], ["vegetation", "#32a03c"],
+                 ["vehicle", "#dc3232"], ["roof", "#963c28"], ["water", "#326edc"]];
+
+const $ = id => document.getElementById(id);
+$("legend").innerHTML = CLASSES.map(([n, c]) => `<span class="sw" style="background:${c}"></span>${n}`).join("");
+
+$("file").onchange = () => {
+  const f = $("file").files[0];
+  if (f) $("inp").src = URL.createObjectURL(f);
+};
+
+$("go").onclick = async () => {
+  const f = $("file").files[0];
+  if (!f) { $("status").textContent = "Choose an image first."; return; }
+  $("status").textContent = "Running... (the first request can be slow)";
+  $("go").disabled = true;
+  try {
+    const body = new FormData();
+    body.append(FIELD, f);
+    const res = await fetch(API_URL, { method: "POST", body });
+    if (!res.ok) throw new Error(res.status + " " + await res.text());
+    if ((res.headers.get("content-type") || "").startsWith("image/")) {
+      $("out").src = URL.createObjectURL(await res.blob());              // endpoint returns the image itself
+    } else {
+      const data = await res.json();                                      // endpoint returns JSON with a base64 image
+      const key = ["overlay", "mask", "prediction", "image", "result"].find(k => typeof data[k] === "string");
+      if (!key) throw new Error("No image field in the response. Fields: " + Object.keys(data).join(", "));
+      $("out").src = data[key].startsWith("data:") ? data[key] : "data:image/png;base64," + data[key];
+    }
+    $("status").textContent = "Done.";
+  } catch (e) {
+    $("status").textContent = "Error: " + e.message;
+  }
+  $("go").disabled = false;
+};
+</script>
+</body>
+</html>
