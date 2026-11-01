@@ -141,7 +141,7 @@ def segment(content: bytes) -> np.ndarray:
         mask = logits.argmax(dim=1)[0]
 
     return (
-        mask[0]
+        mask
         .cpu()
         .numpy()
         .astype(np.uint8)
