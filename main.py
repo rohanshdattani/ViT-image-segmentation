@@ -54,9 +54,10 @@ def segment(content: bytes) -> np.ndarray:
     """Bytes -> class-id mask (H, W), uint8, at the resized input resolution."""
     tensor = torch.from_numpy(prepare_image(content)).unsqueeze(0).to(device)
     with inference_lock, torch.inference_mode():
-        logits = model(pixel_values=tensor).logits                     # (1, C, H/4, W/4)
-        logits = F.interpolate(logits, size=tensor.shape[-2:], mode="bilinear", align_corners=False)
-        mask = logits.argmax(dim=1)[0]
+        logits = model(pixel_values=tensor).logits 
+        mask = logits.argmax(dim=1).float()                   # (1, C, H/4, W/4)
+        mask = F.interpolate(mask.unsqueeze(1), size=tensor.shape[-2:], mode="nearest")
+        
     return mask.cpu().numpy().astype(np.uint8)
 
 
