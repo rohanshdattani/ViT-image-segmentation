@@ -71,24 +71,22 @@ def health():
 
 @app.post("/predict")
 async def predict_image(file: UploadFile):
-    print(">>> /predict REACHED", flush=True)
-    return {"message": "predict endpoint works"}
-    # print(">>> /predict START")
-    # if file.content_type not in ALLOWED_TYPES:
-    #     raise HTTPException(status_code=400, detail="Only JPEG and PNG images are allowed")
-    # content = await file.read()
-    # if len(content) > MAX_UPLOAD_MB * 1024 * 1024:
-    #     raise HTTPException(status_code=413, detail=f"File too large (limit {MAX_UPLOAD_MB} MB)")
-    # try:
-    #     print(">>> Starting segmentation")
-    #     mask = await run_in_threadpool(segment, content)
-    #     print(">>> Segmentation finished")               # keeps the server responsive during inference
-    # except ValueError as err:
-    #     raise HTTPException(status_code=400, detail=str(err))
-    # buffer = io.BytesIO()
-    # Image.fromarray(PALETTE[mask]).save(buffer, format="PNG")
-    # print(">>> Sending response")
-    # return Response(content=buffer.getvalue(), media_type="image/png")
+    print(">>> /predict START")
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail="Only JPEG and PNG images are allowed")
+    content = await file.read()
+    if len(content) > MAX_UPLOAD_MB * 1024 * 1024:
+        raise HTTPException(status_code=413, detail=f"File too large (limit {MAX_UPLOAD_MB} MB)")
+    try:
+        print(">>> Starting segmentation")
+        mask = await run_in_threadpool(segment, content)
+        print(">>> Segmentation finished")               # keeps the server responsive during inference
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+    buffer = io.BytesIO()
+    Image.fromarray(PALETTE[mask]).save(buffer, format="PNG")
+    print(">>> Sending response")
+    return Response(content=buffer.getvalue(), media_type="image/png")
 
 
 # Must stay LAST: it serves static/index.html at "/" and would otherwise shadow routes defined after it.
