@@ -71,21 +71,21 @@ def health():
 
 @app.post("/predict")
 async def predict_image(file: UploadFile):
-    print(">>> /predict START" flush=True)
+    print(">>> /predict START", flush=True)
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(status_code=400, detail="Only JPEG and PNG images are allowed")
     content = await file.read()
     if len(content) > MAX_UPLOAD_MB * 1024 * 1024:
         raise HTTPException(status_code=413, detail=f"File too large (limit {MAX_UPLOAD_MB} MB)")
     try:
-        print(">>> Starting segmentation" flush=True)
+        print(">>> Starting segmentation", flush=True)
         mask = await run_in_threadpool(segment, content)
-        print(">>> Segmentation finished" flush=True)               # keeps the server responsive during inference
+        print(">>> Segmentation finished", flush=True)               # keeps the server responsive during inference
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))
     buffer = io.BytesIO()
     Image.fromarray(PALETTE[mask]).save(buffer, format="PNG")
-    print(">>> Sending response" flush=True)
+    print(">>> Sending response", flush=True)
     return Response(content=buffer.getvalue(), media_type="image/png")
 
 
