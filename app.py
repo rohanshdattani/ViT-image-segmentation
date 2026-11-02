@@ -190,7 +190,7 @@ if uploaded_file is not None:
 
     st.image(
         original,
-        width = 600,
+        width = 300,
     )
 
     if st.button(
