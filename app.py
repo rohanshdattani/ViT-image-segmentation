@@ -208,7 +208,7 @@ if uploaded_file is not None:
 
         st.image(
             result,
-            use_container_width=True,
+            use_container_width=300,
         )
 
         # Download result
